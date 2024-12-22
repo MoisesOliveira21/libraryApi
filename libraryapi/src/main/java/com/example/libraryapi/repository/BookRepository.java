@@ -50,17 +50,18 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
             select b.genre
             from Book b
             join b.author a 
-             where where a.nationality = 'Brasileira'
+             where a.nationality = 'Brasileira'
              order by b.genre
                         
             """)
     List<String> listGenresByBrazilianAuthors();
 
     //named parameters
-    @Query("select b from Book b where b.genre = :genre order by :orderParam ")
-    List<Book> findByGenreNamedParameters(@Param("genre") BookGenre bookGenre, @Param("orderParam") String properyName);
-    @Query("select b from Book b where b.genre = :?1 order by :?2 ")
-    List<Book> findByGenrePositionalParameters(BookGenre bookGenre, String properyName);
+    @Query("select b from Book b where b.genre = :genre order by b.title")
+    List<Book> findByGenreNamedParameters(@Param("genre") BookGenre bookGenre);
+
+    @Query("select b from Book b where b.genre = ?1 order by b.title")
+    List<Book> findByGenrePositionalParameters(BookGenre bookGenre);
     @Modifying
     @Transactional
     @Query("delete from Book where genre = ?1")

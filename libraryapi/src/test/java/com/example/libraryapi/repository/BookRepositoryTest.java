@@ -158,13 +158,13 @@ class BookRepositoryTest {
 
     @Test
     void listBookByGenreOrderedWithQueryJPQL(){
-        var result = bookRepository.findByGenreNamedParameters(BookGenre.FANTASY, "publicationDate");
+        var result = bookRepository.findByGenreNamedParameters(BookGenre.FANTASY);
         result.forEach(System.out::println);
     }
 
     @Test
     void listBookByGenreOrderedByPositionalParamWithQueryJPQL(){
-        var result = bookRepository.findByGenrePositionalParameters(BookGenre.FANTASY, "publicationDate");
+        var result = bookRepository.findByGenrePositionalParameters(BookGenre.FANTASY);
         result.forEach(System.out::println);
     }
 
