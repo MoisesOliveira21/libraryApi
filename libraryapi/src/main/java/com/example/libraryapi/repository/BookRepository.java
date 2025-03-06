@@ -72,4 +72,9 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
     void updatePublicationDateByGenre(LocalDate newDate, BookGenre genre);
 
 
+    boolean exitsAuthor(Author author);
+
+
+
+
 }

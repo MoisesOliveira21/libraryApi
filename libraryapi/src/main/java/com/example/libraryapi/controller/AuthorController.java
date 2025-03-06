@@ -3,10 +3,12 @@ package com.example.libraryapi.controller;
 
 import com.example.libraryapi.controller.dto.AuthorDto;
 import com.example.libraryapi.controller.dto.ResponseError;
+import com.example.libraryapi.exceptions.OperationNotAllowedException;
 import com.example.libraryapi.exceptions.RegistroDuplicadoException;
 import com.example.libraryapi.model.Author;
 import com.example.libraryapi.repository.AuthorRepository;
 import com.example.libraryapi.service.AuthorService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,9 +35,7 @@ public class AuthorController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> createAuthor(@RequestBody AuthorDto authorDto) {
-
-
+    public ResponseEntity<Object> createAuthor(@RequestBody @Valid AuthorDto authorDto) {
         try {
             Author entityAuthor = authorDto.mapToAuthor();
             service.saveAuthor(entityAuthor);
@@ -49,9 +49,10 @@ public class AuthorController {
 
 
             return ResponseEntity.created(location).build();
+
         }catch (RegistroDuplicadoException e){
             var errorDto = ResponseError.conflict(e.getMessage());
-            return ResponseEntity.status(errorDto.status()).body(errorDto.message());
+            return ResponseEntity.status(errorDto.status()).body(errorDto);
 
         }
 
@@ -66,7 +67,6 @@ public class AuthorController {
         if (authorOptional.isPresent()) {
             Author author = authorOptional.get();
             AuthorDto dto = new AuthorDto(author.getId(), author.getName(), author.getBirthDate(), author.getNationality());
-
             return ResponseEntity.ok(dto);
         }
         return ResponseEntity.notFound().build();
@@ -75,20 +75,25 @@ public class AuthorController {
 
     // indempontente
     @DeleteMapping("{id}")
-    public ResponseEntity<Void> deleteAuthor(@PathVariable String id) {
+    public ResponseEntity<Object> deleteAuthor(@PathVariable @Valid String id) {
 
-        var idAuthor = UUID.fromString(id);
-        Optional<Author> authorOptional = service.obterPorId(idAuthor);
+      try {
+          var idAuthor = UUID.fromString(id);
+          Optional<Author> authorOptional = service.obterPorId(idAuthor);
 
-        if (authorOptional.isPresent()) {
+          if (authorOptional.isPresent()) {
 
-            service.deletarPorId(idAuthor);
+              service.deletarPorId(idAuthor);
 
-            return ResponseEntity.status(204).build();
-        }
+              return ResponseEntity.status(204).build();
+          }
 
 
-        return ResponseEntity.notFound().build();
+          return ResponseEntity.notFound().build();
+      }catch (OperationNotAllowedException e){
+          var errorDto = ResponseError.padrao(e.getMessage());
+          return ResponseEntity.status(errorDto.status()).body(errorDto);
+      }
 
 
     }
@@ -98,7 +103,7 @@ public class AuthorController {
                                                          @RequestParam(value = "nationality", required = false) String nationality) {
 
 
-        List<Author> listAuthor = service.pesquisae(name, nationality);
+        List<Author> listAuthor = service.pesquisaByExample(name, nationality);
         List<AuthorDto> listAuthorDto = listAuthor.stream()
                 .map(author ->
                         new AuthorDto(author.getId(),
@@ -112,29 +117,29 @@ public class AuthorController {
     }
 
 
-    @PutMapping("{/id}")
-    public ResponseEntity<Void> update(@PathVariable String id, @RequestBody AuthorDto dto) {
+    @PutMapping("{id}")
+    public ResponseEntity<Object> update(@PathVariable("id") String id, @RequestBody AuthorDto dto) {
 
-        UUID uuid = UUID.fromString(id);
+          try{
 
-        Optional<Author> authorOptional = service.obterPorId(uuid);
+              var idAuthor = UUID.fromString(id);
+              Optional<Author> authorOptional = service.obterPorId(idAuthor);
 
+              if(authorOptional.isEmpty()){
+                  return ResponseEntity.notFound().build();
+              }
 
-        if (authorOptional.isEmpty()) {
+              var author = authorOptional.get();
+              author.setName(dto.name());
+              author.setNationality(dto.nationality());
+              author.setBirthDate(dto.birthDate());
+              service.updateAuthorService(author);
+              return ResponseEntity.noContent().build();
+          }catch (RegistroDuplicadoException e){
+              var errorDto = ResponseError.conflict(e.getMessage());
+              return ResponseEntity.status(errorDto.status()).body(errorDto);
+          }
 
-            return ResponseEntity.notFound().build();
-        }
-        var author = authorOptional.get();
-
-
-        author.setName(dto.name());
-        author.setBirthDate(dto.birthDate());
-        author.setName((dto.nationality()));
-
-
-        service.updateAuthorService(author);
-
-        return ResponseEntity.noContent().build();
 
 
     }

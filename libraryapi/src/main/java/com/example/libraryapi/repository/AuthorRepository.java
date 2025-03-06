@@ -12,7 +12,7 @@ public interface AuthorRepository  extends JpaRepository<Author, UUID> {
 
 
 
-   List<Author> findByName(String name       );
+   List<Author> findByName(String name);
    List<Author> findByNationality(String nationality);
 
 

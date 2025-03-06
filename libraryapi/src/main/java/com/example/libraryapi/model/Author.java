@@ -1,6 +1,8 @@
 package com.example.libraryapi.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
@@ -26,18 +28,18 @@ public class Author {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-
+    @NotBlank(message = "O nome não pode estar vazio")
     @Column(name = "name", length = 100, nullable = false)
     private String name;
 
+    @NotNull(message = "A data de nascimento não pode ser nula")
     @Column(name = "birthDate", nullable = false)
     private LocalDate birthDate;
 
+    @NotBlank(message = "A nacionalidade não pode estar vazia")
     @Column(name = "nationality", length = 50, nullable = false)
     private String nationality;
 
-
-    //Por padrão o one to many é lazy
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Transient
     private List<Book> bookList;

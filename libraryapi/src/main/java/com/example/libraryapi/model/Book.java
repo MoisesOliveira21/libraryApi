@@ -37,10 +37,10 @@ public class Book {
 
 
 
-    @ManyToOne(fetch = FetchType.LAZY) //(cascade = CascadeType.ALL) //por padrão o fetch é eager, caso eu coloque lazy, eu não posso
-    //acessar os dados do relacionamento de autor, não posso fzr um autor.getNome
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_author")
     private Author author;
+
 
 
 }
